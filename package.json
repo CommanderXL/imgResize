@@ -1,0 +1,17 @@
+{
+  "name": "img-resize",
+  "version": "1.0.0",
+  "description": "移动端H5上传图片",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.4.0",
+    "babel-preset-es2015": "^6.22.0",
+    "webpack": "^1.12.11"
+  }
+}

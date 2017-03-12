@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <input type="file" name="" value="">
+    <script src="./dist/resize.min.js">
+      
+    </script>
+    <script>
+      (function() {
+        let input = document.querySelector('input')
+
+        input.addEventListener('change', function (e) {
+          canvasResize(this.files[0], {
+            crop: false,
+            quality: 0.9,
+            rotate: 0,
+            callback(baseStr) {
+              console.log(baseStr.length)
+            }
+          })
+        })
+      })()
+    </script>
+  </body>
+</html>
