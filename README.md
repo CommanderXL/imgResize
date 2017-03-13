@@ -1,1 +1,114 @@
 # 移动端H5图片压缩上传
+
+大体的思路是，部分API的兼容性请参照[caniuse](www.caniuse.com)：
+
+1. 利用[FileReader](https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader),读取`blob对象`,或者是`file对象`，将图片转化为`data uri`的形式。
+2. 使用`canvas`,在页面上新建一个画布,利用`canvas`提供的API,将图片画入这个画布当中。
+3. 利用`canvas.toDataURL()`，进行图片的压缩，得到图片的`data uri`的值
+4. 上传文件。
+
+步骤1当中，在进行图片压缩前，还是对图片大小做了判断的，如果图片大小大于200KB时，是直接进行图片上传，不进行图片的压缩，如果图片的大小是大于200KB，则是先进行图片的压缩再上传:
+
+```javascript
+    <input type="file" id="choose" accept="image/*">
+```
+
+
+```javascript
+    var fileChooser = document.getElementById("choose"),
+        maxSize = 200 * 1024;   //200KB
+    fileChoose.change = function() {
+        var file = this.files[0],   //读取文件
+            reader = new FileReader();
+            
+            reader.onload = function() {
+                var result = this.result,   //result为data url的形式
+                    img = new Image(),
+                    img.src = result;
+                    
+                    
+                if(result.length < maxSize) {  
+                    imgUpload(result);      //图片直接上传
+                } else {
+                    var data = compress(img);    //图片首先进行压缩
+                    imgUpload(data);                //图片上传
+                }
+            }
+            
+            reader.readAsDataURL(file);
+    }
+```
+
+步骤2，3：
+```javascript
+    var canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+        
+    function compress(img) {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        //利用canvas进行绘图
+        
+        //将原来图片的质量压缩到原先的0.2倍。
+        var data = canvas.toDataURL('image/jpeg', 0.2); //data url的形式
+        
+        return data;
+    }
+```
+在利用canvas进行绘图的过程中,IOS图片上传过程中，存在着这样的问题：
+
+1. 当你竖着拿手机的时候，拍完照，上传图片时，会出现照片自动旋转的情况，而横着拍照并上传图片时不会出现这个问题。这个时候如果想纠正图片自动旋转的情况，将图片转化为二进制的数据`(使用了binaryajax.js)`，方便获取图片的`exif信息`，通过获取`exif的信息`来确定图片旋转的角度`(使用了exif.js)`，然后再进行图片相应的旋转处理。[解决方法请戳我](http://bbs.it-home.org/thread-55474-1-1.html)
+2. 在`IOS`中，当图片的大小大于 2MB时，会出现图片压扁的情况，这个时候需要重置图片的比例。[解决方法请戳我](http://stackoverflow.com/questions/11929099/html5-canvas-drawimage-ratio-bug-ios)
+3. 利用FileReader，读取图片的过程需要花费一定时间,将图片数据注入到canvas画布中需要一定时间，图片压缩的过程中，图片越大，CPU计算消耗的时间也越长，可能会出现顿卡的情况。总之，就是这个过程当中需要花费一定时间。
+4. IOS8.1的版本中有个`FileReader`的bug: `FileReader`读取的图片转化为Base64时，字符串为空，[具体的问题描述请戳我](http://stackoverflow.com/questions/25999083/filereader-not-working-on-ios-8)
+
+
+步骤4,文件上传有2种方式:
+
+1. 将图片转化为base64
+2. 将图片数据转为Blob对象，使用FormData上传文件
+
+方式1可以通过xhr ajax或者xhr2 FormData进行提交。
+
+方法2这里就有个大坑了。[具体描述请戳我](https://code.google.com/p/android/issues/detail?id=39882)
+
+简单点说就是：`Blob对象`是无法注入到`FormData对象`当中的。
+
+当你拿到了图片的`data uri数据`后，将其转化为`Blob`数据类型
+```javascript
+    var ndata = compress(img);
+    ndata = window.atob(ndata); //将base64格式的数据进行解码
+    
+    //新建一个buffer对象，用以存储图片数据
+    var buffer = new Uint8Array(ndata.length);
+    for(var i = 0; i < text.length; i++) {
+        buffer[i] = ndata.charCodeAt(i);
+    }
+    
+    //将buffer对象转化为Blob数据类型
+    var blob = getBlob([buffer]);
+    
+    var fd = new FormData(),
+        xhr = new XMLHttpRequest();
+    fd.append('file', blob);
+    
+    xhr.open('post', url);
+    xhr.onreadystatechange = function() {
+        //do something
+    }
+    xhr.send(fd);
+```
+
+在新建`Blob对象`中有需要进行兼容性的处理，特别是对于不支持`FormData`上传`blob`的andriod机的兼容性处理。[具体的方法请戳我](https://github.com/gokercebeci/canvasResize)
+主要实现的细节是通过重写HTTP请求。
+
+
+---
+
+## 2月19日更新
+
+在安卓机器中，部分`4.x`的机型, 在`webview`里面对`file`对象进行了阉割，比如你拿不到`file.type`的值。
+
+## 2月22日更新
+`Android4.4`下`<input type="file">`由于系统`WebView`的`openFileChooser`接口更改，导致无法选择文件，从而导致无法上传文件. [bug描述请戳我](https://code.google.com/p/android/issues/detail?id=62220)
