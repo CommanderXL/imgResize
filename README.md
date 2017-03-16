@@ -112,3 +112,32 @@
 
 ## 2月22日更新
 `Android4.4`下`<input type="file">`由于系统`WebView`的`openFileChooser`接口更改，导致无法选择文件，从而导致无法上传文件. [bug描述请戳我](https://code.google.com/p/android/issues/detail?id=62220)
+
+
+## 使用
+
+```javascript
+  npm install
+  npm run build
+```
+
+* 支持AMD, CMD模块化的引入方式
+* 也可通过外链
+
+```javascript
+  // 
+  canvasResize(this.files[0], {
+      crop: false,    // 是否裁剪
+      quality: 0.9,   // 压缩质量  0 - 1
+      rotate: 0,      // 旋转角度 
+      callback(baseStr) {
+        console.log(baseStr.length)
+      }
+    })
+```
+
+## 库
+
+* [binaryajax.js](https://github.com/jseidelin/binaryajax)
+* [canvasResize.js](https://github.com/gokercebeci/canvasResize)
+* [exif.js](https://github.com/exif-js/exif-js)
