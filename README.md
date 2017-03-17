@@ -61,15 +61,15 @@
 1. 当你竖着拿手机的时候，拍完照，上传图片时，会出现照片自动旋转的情况，而横着拍照并上传图片时不会出现这个问题。这个时候如果想纠正图片自动旋转的情况，将图片转化为二进制的数据`(使用了binaryajax.js)`，方便获取图片的`exif信息`，通过获取`exif的信息`来确定图片旋转的角度`(使用了exif.js)`，然后再进行图片相应的旋转处理。[解决方法请戳我](http://bbs.it-home.org/thread-55474-1-1.html)
 2. 在`IOS`中，当图片的大小大于 2MB时，会出现图片压扁的情况，这个时候需要重置图片的比例。[解决方法请戳我](http://stackoverflow.com/questions/11929099/html5-canvas-drawimage-ratio-bug-ios)
 3. 利用FileReader，读取图片的过程需要花费一定时间,将图片数据注入到canvas画布中需要一定时间，图片压缩的过程中，图片越大，CPU计算消耗的时间也越长，可能会出现顿卡的情况。总之，就是这个过程当中需要花费一定时间。
-4. IOS8.1的版本中有个`FileReader`的bug: `FileReader`读取的图片转化为Base64时，字符串为空，[具体的问题描述请戳我](http://stackoverflow.com/questions/25999083/filereader-not-working-on-ios-8)
+4. IOS8.1的版本中有个`FileReader`的bug: `FileReader`读取的图片转化为Base64时，字符串为空，[具体的问题描述请戳我](http://stackoverflow.com/questions/25999083/filereader-not-working-on-ios-8), 遇到这个情况的话- - 还是老老实实把图片不做压缩处理扔给服务端吧. 
 
 
 步骤4,文件上传有2种方式:
 
-1. 将图片转化为base64
-2. 将图片数据转为Blob对象，使用FormData上传文件
+1. 将图片转化为`base64`
+2. 将图片数据转为`Blob对象`，使用`FormData`上传文件
 
-方式1可以通过xhr ajax或者xhr2 FormData进行提交。
+方式1可以通过`xhr ajax`或者`xhr2 FormData`进行提交。
 
 方法2这里就有个大坑了。[具体描述请戳我](https://code.google.com/p/android/issues/detail?id=39882)
 
@@ -108,10 +108,11 @@
 
 ## 2月19日更新
 
-在安卓机器中，部分`4.x`的机型, 在`webview`里面对`file`对象进行了阉割，比如你拿不到`file.type`的值。
+在安卓机器中, 部分机型不支持`JPEG`格式的图片导出, 在`fex-team`提供的`webuploader`插件当中有个`jpegencoder.js`和`androidpatch.js`插件主要是解决这个问题, [链接请戳我](https://github.com/fex-team/webuploader/blob/master/src/runtime/html5/androidpatch.js)，不过在部分`4.x`的机型, 在`webview`里面对`file`对象进行了阉割，比如你拿不到`file.type`的值。 唉- -。
 
 ## 2月22日更新
 `Android4.4`下`<input type="file">`由于系统`WebView`的`openFileChooser`接口更改，导致无法选择文件，从而导致无法上传文件. [bug描述请戳我](https://code.google.com/p/android/issues/detail?id=62220)
+
 
 
 ## 使用
@@ -125,7 +126,6 @@
 * 也可通过外链
 
 ```javascript
-  // 
   canvasResize(this.files[0], {
       crop: false,    // 是否裁剪
       quality: 0.9,   // 压缩质量  0 - 1
@@ -136,8 +136,17 @@
     })
 ```
 
-## 库
+## Some Tips
+
+ * 在使用`FormData`进行文件上传的时候，没有将图片文件转化为`blob`，而是转为了`base64`，主要是考虑到部分机型的兼容性的问题。
+ * 在遇到一些是由于`native`端上导致的问题的时候，比如在安卓`4.4.x`的部分机型(主要集中在原生的系统，部门国产机，对`openFileChooser`做过兼容)当中无法唤起选择图片或拍照的接口,
+ 这个时候还是让`native`的同学给你提供`bridge`去完成图片的压缩和转码吧, 然后你再拿着端上给压缩好的图片去上传吧。
+ * 封装好的库中没有提供裁剪的选项，如果需要有这方面的需求，请在`src/canvasResize.js`里面做相应的修改(读读源码也挺好- -)。
+
+## 使用到的库
 
 * [binaryajax.js](https://github.com/jseidelin/binaryajax)
 * [canvasResize.js](https://github.com/gokercebeci/canvasResize)
 * [exif.js](https://github.com/exif-js/exif-js)
+* [andriodpatch.js](https://github.com/fex-team/webuploader/blob/master/src/runtime/html5/androidpatch.js)
+* [jpegencoder.js](https://github.com/fex-team/webuploader/blob/master/src/runtime/html5/jpegencoder.js)
