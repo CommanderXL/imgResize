@@ -2,11 +2,11 @@
   "name": "canvas-resize",
   "version": "1.1.0",
   "description": "移动端H5上传图片",
-  "main": "./dist/resize.min.js",
+  "main": "./dist/canvasResize.min.js",
   "scripts": {
     "roll": "rollup -c rollup.config.js"
   },
-  "author": "",
+  "author": "XRene",
   "license": "ISC",
   "devDependencies": {
     "rollup": "^0.66.2",
