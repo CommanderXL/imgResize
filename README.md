@@ -2,9 +2,8 @@
 
 ## 安装
 
-```javascript
-npm install canvas-resize --save
-```
+* `npm install canvas-resize --save`
+* `UMD`
 
 ## 使用
 
